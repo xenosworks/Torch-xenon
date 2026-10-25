@@ -123,7 +123,12 @@ static std::string GetTypeNode(YAML::Node& node) {
 
 void Companion::Init(const ExportType type) {
 
+#ifdef __XSDK__
+    // On the Xbox 360 each line costs a third of a millisecond, and a ROM's info lines number tens of thousands.
+    spdlog::set_level(spdlog::level::warn);
+#else
     spdlog::set_level(spdlog::level::debug);
+#endif
     spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%l] %v");
 
     this->gConfig.exporterType = type;
@@ -1179,6 +1184,11 @@ void Companion::Process() {
 
     if(cfg["logging"]){
         auto level = cfg["logging"].as<std::string>();
+#ifdef __XSDK__
+        if(level == "TRACE" || level == "DEBUG" || level == "INFO") {
+            level = "WARN";
+        }
+#endif
         if(level == "TRACE") {
             spdlog::set_level(spdlog::level::trace);
         } else if(level == "DEBUG") {
