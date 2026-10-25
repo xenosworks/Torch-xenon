@@ -47,6 +47,11 @@ class BinaryReader {
 
   protected:
     std::shared_ptr<Stream> mStream;
+#ifdef __XSDK__
+    // Little by default, as on the PC Torch is written for, so a big-endian console makes the PC's archive byte for byte.
+    Torch::Endianness mEndianness = Torch::Endianness::Little;
+#else
     Torch::Endianness mEndianness = Torch::Endianness::Native;
+#endif
 };
 } // namespace LUS

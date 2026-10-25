@@ -1,7 +1,11 @@
 #include "BaseFactory.h"
 
 void BaseExporter::WriteHeader(LUS::BinaryWriter &writer, Torch::ResourceType resType, int32_t version) {
+#ifdef __XSDK__
+    writer.Write((int8_t)(Torch::Endianness::Little)); // 0x00 - Endianness, the PC's (BinaryWriter.h)
+#else
     writer.Write((int8_t)(Torch::Endianness::Native)); // 0x00 - Endianness
+#endif
     writer.Write((int8_t)0); // 0x01 - Is Asset Custom
     writer.Write((int8_t)0); // 0x02 -
     writer.Write((int8_t)0); // 0x03

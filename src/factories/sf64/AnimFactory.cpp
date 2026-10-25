@@ -113,7 +113,10 @@ ExportResult SF64::AnimBinaryExporter::Export(std::ostream &write, std::shared_p
     SPDLOG_INFO("Joint Size: {}", jointSize);
 
     for(auto joint : anim->mJointKeys) {
-        writer.Write((char*) joint.keys, sizeof(joint.keys));
+        // A key at a time, in the writer's order: the array's bytes are the host's, big-endian on the Xbox 360.
+        for(auto key : joint.keys) {
+            writer.Write(key);
+        }
     }
 
     auto frameSize = anim->mFrameData.size();
