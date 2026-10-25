@@ -3126,8 +3126,14 @@ static mz_bool mz_zip_get_file_modified_time(const char *pFilename, mz_uint16 *p
 #ifndef MINIZ_NO_TIME
 static mz_bool mz_zip_set_file_times(const char *pFilename, time_t access_time, time_t modified_time)
 {
+#ifdef __XSDK__
+  // xsdk has no utime: an extracted file keeps the time it was written.
+  (void)pFilename; (void)access_time; (void)modified_time;
+  return MZ_FALSE;
+#else
   struct utimbuf t; t.actime = access_time; t.modtime = modified_time;
   return !utime(pFilename, &t);
+#endif
 }
 #endif // #ifndef MINIZ_NO_TIME
 #endif // #ifndef MINIZ_NO_STDIO

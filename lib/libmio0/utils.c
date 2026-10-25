@@ -112,7 +112,9 @@ void touch_file(const char *filename)
    //fd = open(filename, O_WRONLY|O_CREAT|O_NOCTTY|O_NONBLOCK, 0666);
    fd = open(filename, O_WRONLY|O_CREAT, 0666);
    if (fd >= 0) {
+#ifndef __XSDK__ // xsdk has no utime
       utime(filename, NULL);
+#endif
       close(fd);
    }
 }
