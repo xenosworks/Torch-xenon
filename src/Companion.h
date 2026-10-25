@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <functional>
 #include <optional>
 #include <filesystem>
 #include <vector>
@@ -111,6 +112,9 @@ struct ParseResultData {
 class Companion {
 public:
     static Companion* Instance;
+    // Called before each asset file of a ROM's export, and once more after the last, with how many are done and how
+    // many there are, so a game extracting on its own first run can show how far it's got.
+    std::function<void(const std::string& yamlPath, size_t done, size_t total)> gProgress;
 
     explicit Companion(std::filesystem::path rom, const ArchiveType otr, const bool debug, const bool modding = false,
                        const std::string& srcDir = "", const std::string& destPath = "") : gCartridge(nullptr),

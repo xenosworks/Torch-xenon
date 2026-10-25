@@ -1260,6 +1260,7 @@ void Companion::Process() {
         vWriter.Write((uint32_t) 0);
     }
 
+    std::vector<std::string> yamlPaths;
     for (const auto & entry : Torch::getRecursiveEntries(this->gAssetPath)){
         if(entry.is_directory())  {
             continue;
@@ -1275,14 +1276,28 @@ void Companion::Process() {
             continue;
         }
 
+        yamlPaths.push_back(yamlPath);
+    }
+
+    for (size_t done = 0; done < yamlPaths.size(); done++){
+        const auto& yamlPath = yamlPaths[done];
+        const std::filesystem::path entryPath(yamlPath);
+        if (this->gProgress) {
+            this->gProgress(yamlPath, done, yamlPaths.size());
+        }
+
         YAML::Node root = YAML::LoadFile(yamlPath);
-        this->gCurrentDirectory = relative(entry.path(), this->gAssetPath).replace_extension("");
+        this->gCurrentDirectory = relative(entryPath, this->gAssetPath).replace_extension("");
         this->gCurrentFile = yamlPath;
 
         if (!this->gProcessedFiles.contains(this->gCurrentFile)) {
             ProcessFile(root);
             this->gProcessedFiles.insert(this->gCurrentFile);
         }
+    }
+
+    if (this->gProgress) {
+        this->gProgress("", yamlPaths.size(), yamlPaths.size());
     }
 
     if(wrapper != nullptr) {
@@ -1633,7 +1648,6 @@ std::optional<YAML::Node> Companion::AddAsset(YAML::Node asset) {
         }
     }
 
-    auto rom = this->GetRomData();
     auto factory = this->GetFactory(type);
 
     if(!factory.has_value()) {
