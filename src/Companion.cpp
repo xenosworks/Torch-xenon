@@ -5,7 +5,12 @@
 #include "archive/SWrapper.h"
 #include "archive/ZWrapper.h"
 #include "spdlog/spdlog.h"
+#ifdef __XSDK__
+// The console kernel's SHA-1 in place of hj/sha1.h, which is GPL-3 and would make a game linking Torch GPL-3 too.
+#include "xsdk/kernel.h"
+#else
 #include "hj/sha1.h"
+#endif
 
 #include <regex>
 #include <fstream>
@@ -1627,7 +1632,19 @@ std::string Companion::RelativePathToSrcDir(const std::string& path) const {
 }
 
 std::string Companion::CalculateHash(const std::vector<uint8_t>& data) {
+#ifdef __XSDK__
+    uint8_t digest[20];
+    XeCryptSha(data.data(), (uint32_t) data.size(), nullptr, 0, nullptr, 0, digest, sizeof(digest));
+    static const char hexDigits[] = "0123456789abcdef";
+    std::string hex;
+    for (const uint8_t byte : digest) {
+        hex += hexDigits[byte >> 4];
+        hex += hexDigits[byte & 0xF];
+    }
+    return hex;
+#else
     return Chocobo1::SHA1().addData(data).finalize().toString();
+#endif
 }
 
 std::optional<YAML::Node> Companion::AddAsset(YAML::Node asset) {
